@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>VINORSOFT TEAM</title>
+        <meta property="og:image" content="/logo.png">
+        <link rel="image_src" type="image/png" href="https://rajpurkar.github.io/SQuAD-explorer/logo.png">
+        <link rel="shortcut icon" href="https://rajpurkar.github.io/SQuAD-explorer/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="https://rajpurkar.github.io/SQuAD-explorer/favicon.ico" type="image/x-icon">
+        <link rel="stylesheet" href="{{url_for('static', path='css/bootstrap.min.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='css/layout.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='css/article.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='css/article.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', path='css/styleR2.css')}}">
+
+
+        <script src="{{url_for('static', path='./js/recorder.js')}}"></script>
+
+        <script type="text/javascript" src="../static/js/recorder.js"></script>
+        <script type="text/javascript" src="../static/js/autoload.js"></script>
+
+        <script type="text/javascript" src="https://code.jquery.com/jquery.min.js"></script>
+
+        <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../static/css/layout.css">
+        <link rel="stylesheet" href="../static/css/article.css">
+        <link rel="stylesheet" href="../static/css/styleR2.css">
+
+    </head>
+
+    <body>
+        <div class="cover">
+            <div class="container">
+                <nav class="navbar navbar-inverse">
+                    <div class="container-fluid">
+                        <div class="navbar-header">
+                            <a class="navbar-brand" href="/">
+                                VINORSOFT TEAM
+                            </a>
+                        </div>
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="/">Home</a>
+                            </li>
+                            <li>
+                                <a href="/ask">Ask And Answer</a>
+                            </li>
+                            <li>
+                                <a href="/ShowQA">Show QA test</a>
+                            </li>
+                            <li>
+                                <a href="/searchV2">Search Answer</a>
+                            </li>
+                            <li 2class="active">
+                                <a href="/text2voice">Text2voice</a>
+                            </li>
+
+                            <li >
+                                <a href="/voice2text">Voice2text</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="infoCard">
+                            
+                            <div class="infoBody">
+                                <h1 id="title">Chuyển đổi giọng nói thành văn bản</h1>
+                                <h2 id="subtitle"></h2>
+                                <div>
+
+                                    <form action="/ask" method="post">
+                                        <div class="para-wrap">
+                                            <div class="row">
+                                                
+
+                                                <div class="col-md-12">
+                                                    <label for="">
+                                                        <h2></h2>
+                                                    </label>
+                                                    <div>
+                                                        <div class="qa-wrap correct-qa" data-id="" style="float:left; width: 80%;">
+                                                            <strong class="question">
+                                                                
+                                                                <input type="text" class="form-control" id="question" rows="10" name="question" placeholder="Kết quả" value="{{question}}" required>
+                                                            </strong>
+
+                                                        </div>
+                                                        <div class="holder" style=" float:left;position:relative; top:10px; left : 5px">
+                                                            <div data-role="controls">
+                                                                <button type="button" id="speech" class="btn1">
+                                                                    <div></div>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mic" viewbox="0 0 16 16">
+                                                                        <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
+                                                                        <path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/>
+                                                                    </svg>
+                                                                </button>
+                                                                <div data-role="recordings" hidden></div>
+
+                                                            </div>
+                                                        </div>
+
+                                                        
+                                                    </div>
+                                                    
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </body>
+
+    <script>
+
+        jQuery(document).ready(function () {
+            var $ = jQuery;
+            var myRecorder = {
+                objects: {
+                    context: null,
+                    stream: null,
+                    recorder: null
+                },
+                init: function () {
+                    if (null === myRecorder.objects.context) {
+                        myRecorder.objects.context = new(window.AudioContext || window.webkitAudioContext);
+                    }
+                },
+                start: function () {
+                    var options = {
+                        audio: true,
+                        video: false
+                    };
+                    navigator.mediaDevices.getUserMedia(options).then(function (stream) {
+                        myRecorder.objects.stream = stream;
+                        myRecorder.objects.recorder = new Recorder(myRecorder.objects.context.createMediaStreamSource(stream), {numChannels: 1});
+                        myRecorder.objects.recorder.record();
+                    }).catch(function (err) {});
+                },
+                stop: function (listObject) {
+                    var filename = "";
+                    if (null !== myRecorder.objects.stream) {
+                        myRecorder.objects.stream.getAudioTracks()[0].stop();
+                    }
+                    if (null !== myRecorder.objects.recorder) {
+                        myRecorder.objects.recorder.stop();
+
+                        // Validate object
+                        if (null !== listObject && 'object' === typeof listObject && listObject.length > 0) { // Export the WAV file
+                            myRecorder.objects.recorder.exportWAV(function (blob) {
+
+                                const XHR = new XMLHttpRequest();
+                                var data = new FormData()
+                                data.append('file', blob, 'fileaudio');
+                                XHR.open('POST', window.location.origin + "/voice2text", true);
+                                XHR.send(data);
+                                XHR.onreadystatechange = function () {
+                                    if (XHR.readyState == 4 && XHR.status == 200) {
+                                        var responseStr = XHR.responseText
+                                        document.getElementById("question").value = responseStr.replace(/["]+/ig, "");
+                                        console.log(typeof(XHR.responseText));
+                                        
+                                    }
+                                };
+                            });
+                        }
+                    }
+                }
+            };
+
+
+            // Prepare the recordings list
+            var listObject = $('[data-role="recordings"]');
+
+            // Prepare the record button
+            $('[data-role="controls"] > button').click(function () { // Initialize the recorder
+                myRecorder.init();
+                // Get the button state
+                var buttonState = !! $(this).attr('data-recording');
+
+                // Toggle
+                if (! buttonState) {
+                    $(this).attr('data-recording', 'true');
+                    myRecorder.start();
+                } else {
+                    $(this).attr('data-recording', '');
+                    myRecorder.stop(listObject);
+                }
+            });
+
+
+        });
+    </script>
+
+</html>

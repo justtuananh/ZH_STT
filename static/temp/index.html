@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <link
+        href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link rel="stylesheet" href="../static/css/style.css">
+        <link rel="stylesheet" href="../static/css/green-audio-player.css">
+
+        <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+
+
+        <script type="text/javascript" src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+        <script type="text/javascript" src="{{url_for('static', filename='js/recorder.js')}}"></script>
+
+    </head>
+
+    <body>
+        <div class="header">
+            <div class="left">
+                <!-- <img src="{{url_for('static', filename='img/logo.png')}}" alt=""> -->
+                <img src="../static/img/logo.png" alt="">
+            </div>
+            <div class="center">
+                THƯ KÝ CUỘC HỌP
+            </div>
+            <div class="right"></div>
+        </div>
+        <div id="virtual"></div>
+        
+        <div class="main">
+            <div class="buttonGroup">
+                <div class="button1">
+                    <button type="button" onclick="init()" class="btn btn-lg btn-primary btn1">Bắt đầu</button>
+                </div>
+                <div class="button2">
+                    <button type="button" onclick="endTranscriptions()" class="btn btn-lg btn-danger btn2">Kết thúc</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="ready-player-1">
+                    <audio crossorigin preload="none">
+                        <source src="audio/example-1.mp3" type="audio/mpeg">
+                    </audio>
+                </div>
+            </div>
+   
+
+            <div>
+                <textarea type="text" class="form-control" id="transcript" name="transcript" placeholder="Kết quả" value="{{question}}" required></textarea>    
+            </div>
+
+            <div class="saveText">
+                <button type="button" id="save-button" class="btn btn-lg btn-success btn1">Save text as file</button>
+            </div>
+        </div>
+
+
+        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy" crossorigin="anonymous"></script>
+    
+        <script src="../static/js/green-audio-player.js"></script>
+
+        <script src="/static/js/RecordRTC.js"></script>
+
+
+    </body>
+
+</html>
+
+<script>
+
+    window.onbeforeunload = function () {
+        return "Dude, are you sure you want to leave? Think of the kittens!";
+    }
+
+
+    class AudioVisualizer {
+        constructor(audioContext, processFrame, processError) {
+            this.audioContext = audioContext;
+            this.processFrame = processFrame;
+            this.connectStream = this.connectStream.bind(this);
+            navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(this.connectStream).catch((error) => {
+                if (processError) {
+                    processError(error);
+                }
+            });
+
+
+        }
+
+        connectStream(stream) {
+            this.analyser = this.audioContext.createAnalyser();
+            const source = this.audioContext.createMediaStreamSource(stream);
+            console.log(source)
+            source.connect(this.analyser);
+            this.analyser.smoothingTimeConstant = 0.5;
+            this.analyser.fftSize = 32;
+
+            this.initRenderLoop(this.analyser);
+        }
+
+        initRenderLoop() {
+            const frequencyData = new Uint8Array(this.analyser.frequencyBinCount);
+            const processFrame = this.processFrame || (() => {});
+
+            const renderFrame = () => {
+                this.analyser.getByteFrequencyData(frequencyData);
+                processFrame(frequencyData);
+
+                requestAnimationFrame(renderFrame);
+            };
+            requestAnimationFrame(renderFrame);
+        }
+    }
+
+    const visualMainElement = document.getElementById('virtual');
+    const visualValueCount = 16;
+    let visualElements;
+    const createDOMElements = () => {
+        let i;
+        for (i = 0; i < visualValueCount; ++ i) {
+            const elm = document.createElement('div');
+            visualMainElement.appendChild(elm);
+        }
+
+        visualElements = document.querySelectorAll('#virtual div');
+
+    };
+    createDOMElements();
+
+    let loopInterval = null;
+
+
+    const startTranscriptions = () => {
+        // fetch("/start_asr").then(res => res.json()).then(data => console.log(data))
+        // loopInterval = setInterval(() => {
+        //     fetch("/get_audio").then(res => res.json()).then(data => {
+        //         let doc = document.getElementById("transcript")
+        //         if (data !== "") {
+        //             doc.value = data;
+        //         }
+        //     })
+        // }, 100)
+        loopRecord = setInterval(() => {
+            fetch("/loop?income=done")
+        }, 30000)
+    };
+
+    const endTranscriptions = () => {
+        myRecorder.stop();
+        clearInterval(loopInterval);
+
+    }
+
+    let audioContext;
+
+    const init = () => { // Creating initial DOM elements
+        audioContext = new AudioContext();
+        const initDOM = () => {
+            visualMainElement.innerHTML = '';
+            createDOMElements();
+        };
+        initDOM();
+
+        // Swapping values around for a better visual effect
+        const dataMap = {
+            0: 15,
+            1: 10,
+            2: 8,
+            3: 9,
+            4: 6,
+            5: 5,
+            6: 2,
+            7: 1,
+            8: 0,
+            9: 4,
+            10: 3,
+            11: 7,
+            12: 11,
+            13: 12,
+            14: 13,
+            15: 14
+        };
+        const processFrame = (data) => {
+            const values = Object.values(data);
+            let i;
+            for (i = 0; i < visualValueCount; ++ i) {
+                const value = values[dataMap[i]] / 255;
+                const elmStyles = visualElements[i].style;
+                elmStyles.transform = `scaleY( ${value} )`;
+                elmStyles.opacity = Math.max(.25, value);
+            }
+        };
+
+        const processError = () => {
+            visualMainElement.classList.add('error');
+            visualMainElement.innerText = 'Please allow access to your microphone in order to see this demo.\nNothing bad is going to happen... hopefully :P';
+        }
+
+
+        const a = new AudioVisualizer(audioContext, processFrame, processError);
+
+        myRecorder.init(audioContext);
+        myRecorder.start();
+        startTranscriptions()
+    };
+   
+    const end = () => {
+        stopAudioOnly = (stream) => {
+            stream.getTracks().forEach(function (track) {
+                if (track.readyState == 'live' && track.kind === 'audio') {
+                    track.stop();
+                }
+            });
+            stopAudioOnly()
+            console.log('ssss')
+        }
+    }
+
+
+    var $ = jQuery;
+    var myRecorder = {
+        objects: {
+            context: null,
+            stream: null,
+            recorder: null
+        },
+        init: function (context) {
+            if (null === myRecorder.objects.context) {
+                // myRecorder.objects.context = new(window.AudioContext || window.webkitAudioContext);
+                myRecorder.objects.context = context;
+            }
+        },
+        start: function () {
+            var options = {
+                audio: true,
+                video: false
+            };
+            navigator.mediaDevices.getUserMedia(options).then(function (stream) {
+                myRecorder.objects.stream = stream;
+                myRecorder.objects.recorder = new Recorder(myRecorder.objects.context.createMediaStreamSource(stream), {numChannels: 1});
+                myRecorder.objects.recorder.record();
+            }).catch(function (err) {});
+        },
+        stop: function () {
+            var filename = "";
+            if (null !== myRecorder.objects.stream) {
+                myRecorder.objects.stream.getAudioTracks()[0].stop();
+            }
+            if (null !== myRecorder.objects.recorder) {
+                myRecorder.objects.recorder.stop();
+
+                // Validate object
+                
+                myRecorder.objects.recorder.exportWAV(function (blob) {
+                    var url = URL.createObjectURL(blob);
+                
+                    const XHR = new XMLHttpRequest();
+                    // var data = new FormData()
+                    // data.append('file', blob, 'fileaudio');
+                    XHR.open('POST', window.location.origin + "/receive", true);
+                    
+                    XHR.send("data="+blob);
+                });
+                
+
+
+            }
+        }
+    };
+
+
+
+
+
+    function saveFileAs() {
+	if (promptFilename = prompt("Save file as", "")) {
+		var textBlob = new Blob([document.getElementById("transcript").value], {type:'text/plain'});
+		var downloadLink = document.createElement("a");
+		downloadLink.download = promptFilename;
+		downloadLink.innerHTML = "Download File";
+		downloadLink.href = window.URL.createObjectURL(textBlob);
+		downloadLink.click();
+    delete downloadLink;
+    delete textBlob;
+	}
+}
+
+document.getElementById("save-button").onclick = saveFileAs;
+
+</script>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new GreenAudioPlayer('.ready-player-1', {
+            showTooltips: true,
+            showDownloadButton: true,
+            enableKeystrokes: true
+        });
+    });
+
+    var audio = document.querySelector('audio');
+
+
+    const socket = new WebSocket("ws://" + location.host + "/listen");
+
+
+    function capturemicrophone(callback) {
+        navigator.mediaDevices.getUserMedia({audio: true}).then(function (microphone) {
+            callback(microphone);
+        }).catch(function (error) {
+            alert('Không tìm thấy mic của bạn!!!');
+            console.error(error);
+        });
+    }
+
+    function stopRecordingCallback() { // audio.src = audio.srcObject = null;
+
+        recorder.microphone.stop();
+        recorder = null;
+    }
+
+    var recorder; // globally accessible
+    var blobs = [];
+
+    document.getElementById('btn-start-recording').onclick = function () {
+
+        this.disabled = true;
+
+        capturemicrophone(function (microphone) {
+            audio.srcObject = microphone;
+
+            recorder = RecordRTC(microphone, {
+                recorderType: StereoAudioRecorder,
+                desiredSampRate: 16000,
+                mimeType: 'audio/wav',
+                timeSlice: 7000, // pass this parameter
+                ondataavailable: function (blob) {
+                    URL.createObjectURL(blob);
+                    blobs.push(blob);
+                    var size = 0;
+                    blobs.forEach(function (b) {
+                        size += b.size;
+                    });
+
+                    if (socket.readyState == 1) {
+                        socket.send(blob);
+                    }
+
+                }
+            });
+
+            recorder.startRecording();
+
+            // release microphone on stopRecording
+            recorder.microphone = microphone;
+
+            document.getElementById('btn-stop-recording').disabled = false;
+        });
+    };
+
+    document.getElementById('btn-stop-recording').onclick = function () {
+        this.disabled = true;
+        document.getElementById('btn-start-recording').disabled = false;
+        recorder.stopRecording(stopRecordingCallback);
+    };
+
+
+    // -------------------------------
+
+    socket.onopen = () => {
+        console.log({event: "onopen"});
+
+    };
+
+    socket.onmessage = (message) => {
+        const received = message.data;
+        if (received) {
+            console.log("onmessage --> " + received);
+            document.getElementById("transcript").value += " " + received;
+        }
+    };
+
+    socket.onclose = () => {
+        console.log({event: "onclose"});
+        recv = false;
+    };
+
+    socket.onerror = (error) => {
+        console.log({event: "onerror", error});
+    };
+
+    // -------------------------------
+</script>
+
+
+
+
+
+</html>

@@ -1,0 +1,78 @@
+.main {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    flex-direction: column;
+    justify-content: center;
+    height: 40%;
+    margin-top: 50px;
+}
+
+.center {
+    flex: 1 0 0;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 26px;
+    letter-spacing: 0.5px;
+    color: #0081e9;
+}
+
+.header {
+    width: 100%;
+    height: 100px;
+    display: flex;
+    box-shadow: 1px 10px 5px 0 rgba(0, 0, 0, 0.25);
+    -webkit-box-shadow: 1px 10px 5px 0 rgba(0, 0, 0, 0.25);
+    -moz-box-shadow: 1px 10px 5px 0 rgba(0, 0, 0, 0.25);
+}
+
+.button1,
+.saveText{
+    text-align: center;
+    margin-top: 50px;
+
+}
+
+
+#transcript {
+    position: relative;
+    inset-block-start: 60%;
+    inline-size: 77vw;
+    padding-inline-start: 20vw;
+    padding-inline-end: 20vw;
+    font-size: x-large;
+    justify-content: center;
+    margin-top: 57px;
+}
+
+
+
+textarea {
+    height: 300px;
+}
+
+
+
+#thefile {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 100;
+  }
+  
+  #canvas {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 77%;
+    height: 100%;
+  }
+  
+  audio {
+    position: fixed;
+    left: 10px;
+    bottom: 10px;
+    width: calc(100% - 20px);
+  }

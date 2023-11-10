@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="../static/css/style.css"> -->
+    <link rel="stylesheet" href="../static/css/green-audio-player.css">
+    <link rel="stylesheet" href="../static/css/upload.css">
+    <title>Upload Voice to Text
+    </title>
+    <link rel="stylesheet" href="{{url_for('static', path='./css/style.css')}}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+
+
+    <script type="text/javascript" src="{{url_for('static', path='./js/jquery.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', path='./js/recorder.js')}}"></script>
+
+</head>
+
+<body>
+    <div class="header">
+        <div class="left">
+            <!-- <img src="{{url_for('static', path='./img/logo.png')}}" alt=""> -->
+            <a href="/"><img src="../static/img/logo.png" alt=""></a>
+            
+        
+
+        </div>
+        <div class="center">
+            THƯ KÝ CUỘC HỌP
+        </div>
+        <div class="right"></div>
+</body>
+
+</html>
+</div>
+<div id="virtual">
+    <canvas id="canvas"></canvas>
+</div>
+<div class="main">
+
+    <div>
+        <div class="ready-player-1">
+            <audio id="aud" crossorigin preload="none">
+                <source src="{{audio_path}}" type="audio/wav">
+            </audio>
+        </div>
+    </div>
+
+
+
+    <div>
+        <textarea type="text" class="form-control" id="transcript" name="transcript" placeholder="Kết quả" value=""
+            required>{{question}}</textarea>
+    </div>
+
+    <div class="saveText">
+        <button type="button" id="save-button" class="btn btn-lg btn-success btn1">Save text as file</button>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js"
+    integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js"
+    integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy"
+    crossorigin="anonymous"></script>
+    
+<script src="../static/js/green-audio-player.js"></script>
+
+<script src="{{url_for('static', path='./js/green-audio-player.js')}}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new GreenAudioPlayer('.ready-player-1', {
+            showTooltips: true,
+            showDownloadButton: true,
+            enableKeystrokes: true
+        });
+
+    });
+
+    $("#file-name").change(() => {
+        console.log(this.value);
+        $("#aud").attr("src", this.value);
+    });
+
+
+    function saveFileAs() {
+        if (promptFilename = prompt("Save file as", "")) {
+            var textBlob = new Blob([document.getElementById("transcript").value], { type: 'text/plain' });
+            var downloadLink = document.createElement("a");
+            downloadLink.download = promptFilename;
+            downloadLink.innerHTML = "Download File";
+            downloadLink.href = window.URL.createObjectURL(textBlob);
+            downloadLink.click();
+            delete downloadLink;
+            delete textBlob;
+        }
+    }
+
+    document.getElementById("save-button").onclick = saveFileAs;
+
+
+    window.onload = function () {
+
+        var file = document.querySelector(".holder");
+        var audio = document.getElementById("aud");
+
+        file.onclick = function () {
+            // var files = this.files;
+            // audio.src = URL.createObjectURL(files[0]);
+            // audio.load();
+            // audio.play();
+            var context = new AudioContext();
+            var src = context.createMediaElementSource(audio);
+            var analyser = context.createAnalyser();
+
+            var canvas = document.getElementById("canvas");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            var ctx = canvas.getContext("2d");
+
+            src.connect(analyser);
+            analyser.connect(context.destination);
+
+            analyser.fftSize = 256;
+
+            var bufferLength = analyser.frequencyBinCount;
+            console.log(bufferLength);
+
+            var dataArray = new Uint8Array(bufferLength);
+
+            var WIDTH = canvas.width;
+            var HEIGHT = canvas.height;
+
+            var barWidth = (WIDTH / bufferLength) * 2.5;
+            var barHeight;
+            var x = 0;
+
+            function renderFrame() {
+                requestAnimationFrame(renderFrame);
+
+                x = 0;
+
+                analyser.getByteFrequencyData(dataArray);
+
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+                for (var i = 0; i < bufferLength; i++) {
+                    barHeight = dataArray[i];
+
+                    var r = barHeight + (25 * (i / bufferLength));
+                    var g = 250 * (i / bufferLength);
+                    var b = 50;
+
+                    ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
+                    ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
+
+                    x += barWidth + 1;
+                }
+            }
+
+            audio.play();
+            renderFrame();
+        };
+    };</script>
+</body>
+
+</html>

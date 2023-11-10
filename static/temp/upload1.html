@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+        <link rel="stylesheet" href="../static/css/style.css"/>
+        <link rel="stylesheet" href="../static/css/green-audio-player.css"/>
+        <link rel="stylesheet" href="../static/css/upload1.css"/>
+        <title>Upload Voice to Text</title>
+        <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}"/>
+
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet"/>
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous"/>
+
+        <script type="text/javascript" src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+
+        <script type="text/javascript" src="{{url_for('static', filename='js/recorder.js')}}"></script>
+    </head>
+
+    <body>
+        <div class="header">
+            <div class="left">
+                <img href="home"  src="{{url_for('static', filename='img/logo.png')}}" alt=""/>
+                <!-- <img src="../static/img/logo.png" alt=""/> -->
+            </div>
+            <div class="center">THƯ KÝ CUỘC HỌP</div>
+            <div class="right"></div>
+        </div>
+
+        <div class="file-upload">
+            <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger( 'click' )">
+                Thêm file ghi âm giọng nói
+            </button>
+
+            <div class="file-upload-content">
+                <label for="filename" id="file-name"></label>
+                <div class="ready-player-1">
+                    <audio id="aud" crossorigin preload="none">
+                        <source src="" type="audio/wav">
+                    </audio>
+                </div>
+            </div>
+
+            <form name='form_upload' method="POST" action="/upload" enctype="multipart/form-data">
+                <div class="voice-upload-wrap">
+                    <input class="file-upload-input" name="audiok" type="file" onchange="readURL(this);" accept="audio/*"/>
+                    <div class="drag-text">
+                        <h3>Kéo thả file âm thanh</h3>
+                    </div>
+                </div>
+
+                <div class="file-upload-content">
+                    <div class="voice-title-wrap">
+                        <button type="submit" class="upload-voice">
+                            <span class="voice-title">Dịch thành văn bản</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="loading">
+            <!-- <img id="loading-image" src="../static/img/loading.gif" alt="Loading..."/> -->
+            <img id="loading-image" src="{{url_for('static', filename='img/loading.gif')}}" alt="Loading..."/>
+        </div>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy" crossorigin="anonymous"></script>
+
+        <script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+
+        <script src="../static/js/green-audio-player.js"></script>
+
+        <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                new GreenAudioPlayer('.ready-player-1', {
+                    showTooltips: true,
+                    showDownloadButton: true,
+                    enableKeystrokes: true
+                });
+
+            });
+            var $ = jQuery;
+
+            $(window).load(function () {
+                $('#loading').hide();
+            });
+
+            $('.upload-voice').click(function () {
+
+                swal.fire({
+                    title: "",
+                    text: "Loading...",
+                    icon: "https://www.boasnotas.com/img/loading2.gif",
+                    buttons: false,
+                    closeOnClickOutside: false,
+                    timer: 3000,
+                    // icon: "success"
+                });
+
+
+            });
+
+            function readURL(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    console.log(input.files[0].size / 1024);
+
+                    if (input.files[0].size / 1024 < 30720) {
+
+                        reader.onload = function (e) {
+                            $(".voice-upload-wrap").hide();
+                            $("#aud").attr("src", e.target.result);
+
+                            $("#file-name").html(input.files[0].name);
+
+                            $(".file-upload-content").show();
+
+                        };
+
+                        reader.readAsDataURL(input.files[0]);
+                    } else {
+
+                        swal.fire({title: "Thông báo !", text: "Dung lượng file quá lớn", type: "error", confirmButtonText: "OK"});
+
+                    }
+
+
+                }
+            }
+        </script>
+    </body>
+
+</html>
