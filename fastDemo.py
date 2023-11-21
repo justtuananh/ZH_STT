@@ -2,6 +2,8 @@ import webbrowser
 import sys
 import argparse
 from os.path import join, realpath
+
+from DemoRealTime import Listener
 # from flask import Flask, render_template, jsonify
 sys.path.append(realpath(join(realpath(__file__), '..', '..')))
 # from DemoRealTime import SpeechRecognitionEngine,Listener
@@ -13,8 +15,8 @@ from fastapi.staticfiles import StaticFiles
 import uvicorn
 from Happy import CheckMic,script_header
 
-from model import predict_greedy,predict_beamSearch,predict_beamSearch_io,predict_greedy_io
-
+#from model import predict_greedy,predict_beamSearch,predict_beamSearch_io,predict_greedy_io
+from chinese import transcribe_audio_to_string ,predict_greedy_io
 global asr_engine
 global loop
 
@@ -90,12 +92,12 @@ async def predict_upload(request: Request,file: UploadFile = File(...)):
         await file.close()
 
     
-    audioPath = f"/static/upload/store/{file.filename}"
+    audioPath = f"/static/upload/{file.filename}"
     print(audioPath)
     curPath = audioPath
 
     ### voice2text write here
-    trans = checkDuration_Trans(file.filename)
+    trans = transcribe_audio_to_string(ROOT_DIR +audioPath)
 
     return templates.TemplateResponse('uploadVoice.html',{"request": request, "audio_path":audioPath, "question":trans})
 

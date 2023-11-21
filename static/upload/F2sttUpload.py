@@ -2,36 +2,38 @@
 
 # from isort import file
 from scipy.io import wavfile
-from model import predict_greedy,predict_beamSearch
 import os
-
+from chinese import transcribe_audio_to_string
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def checkDuration_Trans(fileName):
-    subprocess.call("pwd", shell=True)
+    subprocess.call("cd", shell=True)
     
-    command = f'ffmpeg -i \'{ROOT_DIR}/{fileName}\' -af \'sample_rates=16000\' -f wav \'{ROOT_DIR}/output.wav\''
+    input_path = os.path.join(ROOT_DIR, fileName)
+    output_path = os.path.join(ROOT_DIR, "output.wav")
+
+    command = f'ffmpeg -i "{input_path}" -af "sample_rates=16000" -f wav "{output_path}"'
     print(f"kiet ->>> {command}")
     subprocess.call(command, shell=True)
     
-    subprocess.call(f"mv {ROOT_DIR}/{fileName} {ROOT_DIR}/store/{fileName}", shell=True)
+    store_path = os.path.join(ROOT_DIR, "store", fileName)
+    subprocess.call(f"move /Y \"{input_path}\" \"{store_path}\"", shell=True)
 
     time.sleep(1)
-    fileName = "output.wav"
-    sample_rate, data = wavfile.read(f"{ROOT_DIR}/{fileName}")
+    sample_rate, data = wavfile.read(output_path)
     len_data = len(data)  # holds length of the numpy array
     t = len_data / sample_rate 
-    print(t,sample_rate)
+    print(t, sample_rate)
 
-    if(t > 15):
+    if t > 15:
         try:
-            return audioTimeSlicer(f"{ROOT_DIR}/{fileName}")
+            return audioTimeSlicer(output_path)
         except Exception as e:
             print(e)
             return False
     else:
-        trans = predict_beamSearch(f"{ROOT_DIR}/{fileName}")
-        command = f"rm -r -f {ROOT_DIR}/{fileName}"
+        trans = transcribe_audio_to_string(output_path)
+        command = f"del /Q /F \"{output_path}\""
         subprocess.call(command, shell=True)
         return trans
         
@@ -72,7 +74,7 @@ def audioTimeSlicer(fileName):
 
     results = []
     for filename in files:
-        res = predict_beamSearch(f"{folderName}/{filename}")
+        res = transcribe_audio_to_string(f"{folderName}/{filename}")
         results.append(res)
 
     transcript = ". ".join(results)

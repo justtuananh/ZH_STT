@@ -10,7 +10,7 @@ import sys
 import numpy as np
 import wave
 import os 
-from model import *
+#from model import *
 
 
 class Listener:
