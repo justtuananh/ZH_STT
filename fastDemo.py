@@ -139,5 +139,5 @@ async def websocket_endpoint(sock: WebSocket):
 
 if __name__ == "__main__":
     script_header()
-    webbrowser.open_new('http://localhost:3000/')
-    uvicorn.run(app,port=3000)
+    #webbrowser.open_new('http://localhost:3000/')
+    uvicorn.run(app,port=5505)
